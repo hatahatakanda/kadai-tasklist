@@ -14,10 +14,11 @@ class TasksController extends Controller
      */
     public function index($user_id)
     {
-        if (\Auth::check() and \Auth::id()==$user_id) {
+        if (\Auth::check()  and \Auth::id()==$user_id) {
             $user=\Auth::user();
             $tasks=$user->tasks;
-            return view('tasks.index',['tasks'=>$tasks,]);
+            $user_id=\Auth::id();
+            return view('tasks.index',['user_id'=>$user_id,'tasks'=>$tasks,]);
         }
         else {
             return redirect('/');
@@ -33,7 +34,7 @@ class TasksController extends Controller
     {
         if (\Auth::check() and \Auth::id()==$user_id) {
             $task=new Task;
-            return view('tasks.create',['task'=>$task,]);
+            return view('tasks.create',['user_id'=>$user_id,'task'=>$task,]);
         }
         else {
             return redirect('/');
@@ -46,7 +47,7 @@ class TasksController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request,$user_id)
     {
         if (\Auth::check() and \Auth::id()==$user_id) {
             $this->validate($request, ['status' => 'required|max:10','content' => 'required|max:191',]);
@@ -55,7 +56,7 @@ class TasksController extends Controller
             $task->content = $request->content;
             $task->user_id= \Auth::id();
             $task->save();
-            return redirect('/');
+            return redirect()->action('TasksController@index', ['user_id' => \Auth::id()]);
         }
         else {
             return redirect('/');
@@ -72,11 +73,11 @@ class TasksController extends Controller
     {
         if (\Auth::check() and \Auth::id()==$user_id and null !==\Auth::user()->tasks()->find($id)) {
             $task = Task::find($id);
-            return view('tasks.show', ['task' => $task,]);
+            return view('tasks.show', ['user_id'=>$user_id,'task' => $task,]);
             
         }
         else {
-            return view('welcome');
+            return redirect('/');
         }
         
     }
@@ -87,14 +88,14 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit($user_id,$id)
     {
         if (\Auth::check() and \Auth::id()==$user_id) {
             $task = Task::find($id);
-            return view('tasks.edit', ['task' => $task,]);
+            return view('tasks.edit', ['user_id'=>$user_id,'task' => $task,]);
         }
         else {
-            return view('welcome');
+            return redirect('/');
         }
         
     }
@@ -106,19 +107,20 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $user_id,$id)
     {
         $this->validate($request, ['status' => 'required|max:10','content' => 'required|max:191',]);
         $task = Task::find($id);
-        if ((\Auth::id() === $task->user_id)){
+        if ((\Auth::check() and \Auth::id() == $task->user_id)){
             $task->status =$request->status;
             $task->content = $request->content;
             $task->user_id= \Auth::id();
             $task->save();
+            return redirect()->action('TasksController@index', ['id' => $user_id]);
         }
-        
-
-        return redirect('/');
+        else {
+            return redirect('/');
+        }   
     }
 
     /**
@@ -127,11 +129,12 @@ class TasksController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($user_id,$id)
     {
         $task = Task::find($id);
-        if ((\Auth::id() === $task->user_id)){
+        if ((\Auth::check() and \Auth::id() == $task->user_id)){
             $task->delete();
+            return redirect()->action('TasksController@index', ['id' => $user_id]);
         }
         return redirect('/');
     }

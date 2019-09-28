@@ -27,7 +27,10 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/';
+    protected function redirectTo()
+    {
+        return action('TasksController@index', ['user_id' => \Auth::id()]);
+    }
 
     /**
      * Create a new controller instance.

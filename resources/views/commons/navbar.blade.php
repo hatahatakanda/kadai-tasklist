@@ -1,6 +1,11 @@
 <header class="mb-4">
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark"> 
-        <a class="navbar-brand" href="/">Tasklist</a>
+        @if (Auth::check())
+            {!! link_to_route('tasks.index', 'Tasklist', ['user_id'=>Auth::id()], ['class'=>"navbar-brand"]) !!}
+        @else
+            <a class="navbar-brand" href="/">Tasklist</a>
+        @endif 
+
          
         <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#nav-bar">
             <span class="navbar-toggler-icon"></span>
